@@ -1,9 +1,15 @@
+# Use OpenJDK as base image
 FROM openjdk:17-jdk-slim
 
+# Set working directory inside container
 WORKDIR /app
 
-COPY task-manager-0.0.1-SNAPSHOT.jar app.jar
+# Copy the JAR file from the target directory into the container
+COPY target/task-manager-0.0.1-SNAPSHOT.jar app.jar
 
+# Expose the application port
 EXPOSE 8080
 
-CMD ["java", "-jar", "app.jar"]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
+
