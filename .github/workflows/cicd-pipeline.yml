@@ -1,0 +1,81 @@
+name: CI/CD Pipeline for Task Manager
+
+on:
+  push:
+    branches:
+      - main  # Runs pipeline when changes are pushed to main
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Maven
+        run: |
+          cd task-manager
+          mvn clean package -DskipTests
+
+      - name: Run Tests
+        run: |
+          cd task-manager
+          mvn test
+
+  docker-build:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker Image
+        run: |
+          cd task-manager
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/task-manager:latest .
+
+      - name: Push Docker Image to Docker Hub
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
+
+  deploy-to-remote:
+    name: Deploy to Remote Minikube
+    runs-on: self-hosted
+    needs: docker-build
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Pull Latest Docker Image on Remote VM
+        run: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/task-manager:latest
+
+      - name: Delete Old Deployment (If Exists)
+        run: |
+          kubectl delete deployment task-manager-deployment --ignore-not-found
+
+      - name: Apply Kubernetes Manifests
+        run: |
+          kubectl apply -f task-manager/k8s/
+
+      - name: Verify Deployment
+        run: |
+          kubectl get pods
+          kubectl get services
+          kubectl get deployments
+
