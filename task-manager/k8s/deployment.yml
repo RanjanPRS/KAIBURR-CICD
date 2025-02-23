@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: task-manager
-          image: ranjanprs/task-manager-app:latest
+          image: ranjanprs/task-manager:latest
           ports:
             - containerPort: 8080
           resources:
