@@ -107,7 +107,7 @@ The GitHub Actions pipeline executes automatically upon pushing changes to the `
 2. **Build the Docker image and push to Docker Hub**
 3. **Deploy the application to Kubernetes on AWS EC2**
 
-![pipeline](SCREENSHOTS/pipelne.png)
+![pipeline](SCREENSHOTS/pipeline.png)
 ![pipeline-s](SCREENSHOTS/pipeline-success.png)
 
 ## Deployment Verification on EC2
